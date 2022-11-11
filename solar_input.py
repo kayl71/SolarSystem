@@ -37,7 +37,7 @@ def read_space_objects_data_from_file(input_filename):
 def parse_star_parameters(line, star):
     a=line.split()
     star.R=float(a[1])
-    star.color=a[2].lower
+    star.color=a[2].lower()
     star.m=float(a[3])
     star.x=float(a[4])
     star.y=float(a[5])
@@ -66,7 +66,7 @@ def parse_star_parameters(line, star):
 def parse_planet_parameters(line, planet):
     a=line.split()
     planet.R=float(a[1])
-    planet.color=a[2].lower
+    planet.color=a[2].lower()
     planet.m=float(a[3])
     planet.x=float(a[4])
     planet.y=float(a[5])

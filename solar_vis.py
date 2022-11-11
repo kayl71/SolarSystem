@@ -11,10 +11,10 @@ import pygame as pg
 header_font = "Arial-16"
 """Шрифт в заголовке"""
 
-window_width = 900
+window_width = 1000
 """Ширина окна"""
 
-window_height = 12
+window_height = 700
 """Высота окна"""
 
 scale_factor = 1
@@ -85,4 +85,4 @@ class DrawableObject:
         self.obj = obj
 
     def draw(self, surface):
-        pg.draw.circle(surface, (255, 0, 0), (scale_x(self.obj.x), scale_y(self.obj.y)), self.obj.R)
+        pg.draw.circle(surface,  pg.color.THECOLORS[self.obj.color], (scale_x(self.obj.x), scale_y(self.obj.y)), self.obj.R)
