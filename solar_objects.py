@@ -3,7 +3,7 @@
 
 
 class SolarObj:
-    def __init__(self, m = 1, x = 0, y = 0, Vx = 0, Vy = 0, Fx = 0, Fy = 0, R = 5, color = "red"):
+    def __init__(self, m=1, x=0, y=0, Vx=0, Vy=0, Fx=0, Fy=0, R=5, color="red"):
         """
         :param m: Масса
         :param x: Координата **x**
@@ -24,6 +24,7 @@ class SolarObj:
         self.Fy = Fy
         self.R = R
         self.color = color
+
 
 class Star(SolarObj):
     """Тип данных, описывающий звезду.
