@@ -61,7 +61,7 @@ def parse_star_parameters(line, star):
 
     **star** — объект звезды.
     """
-    pass  # FIXME: допишите парсер
+    pass  # допишите парсер
 
 def parse_planet_parameters(line, planet):
     a=line.split()
@@ -89,7 +89,7 @@ def parse_planet_parameters(line, planet):
 
     **planet** — объект планеты.
     """
-    pass  # FIXME: допишите парсер
+    pass  # допишите парсер
 
 def write_space_objects_data_to_file(output_filename, space_objects):
     """Сохраняет данные о космических объектах в файл.
@@ -105,11 +105,17 @@ def write_space_objects_data_to_file(output_filename, space_objects):
     **output_filename** — имя входного файла
 
     **space_objects** — список объектов планет и звёзд
+    
     """
+    def tp (a):
+        if type(a)==type(Star()):
+            return 'Star'
+        else:
+            return 'Planet'
     with open(output_filename, 'w') as out_file:
         for obj in space_objects:
-            print(out_file, "%s %d %s %f" % ('1', 2, '3', 4.5))
-            # FIXME!
+            print( "%s %i %s %E %E %E %E %E" % ((tp(obj)),obj.R,obj.color,obj.m,obj.x,obj.y,obj.Vx,obj.Vy),file=out_file)
+            
 
 
 if __name__ == "__main__":
