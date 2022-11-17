@@ -107,12 +107,12 @@ def write_space_objects_data_to_file(output_filename, space_objects):
     **space_objects** — список объектов планет и звёзд
     
     """
-    def tp (a):
-        if type(a)==type(Star()):
+    def tp (ab):
+        if type(ab)==type(Star()):
             return 'Star'
         else:
             return 'Planet'
-    with open(output_filename, 'w') as out_file:
+    with open(output_filename, 'a') as out_file:
         for obj in space_objects:
             print( "%s %i %s %E %E %E %E %E" % ((tp(obj)),obj.R,obj.color,obj.m,obj.x,obj.y,obj.Vx,obj.Vy),file=out_file)
             
