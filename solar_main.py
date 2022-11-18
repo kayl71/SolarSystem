@@ -8,23 +8,43 @@ import thorpy
 import time
 import numpy as np
 
-timer = None
+class Time:
+    timer = None
 
-alive = True
+    model_time = 0
+    """Физическое время от начала расчёта.
+    Тип: float"""
 
-perform_execution = False
-"""Флаг цикличности выполнения расчёта"""
+    time_scale = 1000.0
+    """Шаг по времени при моделировании.
+    Тип: float"""
 
-model_time = 0
-"""Физическое время от начала расчёта.
-Тип: float"""
 
-time_scale = 1000.0
-"""Шаг по времени при моделировании.
-Тип: float"""
+class Core:
+    alive = True
 
-space_objects = []
-"""Список космических объектов."""
+    perform_execution = False
+    """Флаг цикличности выполнения расчёта"""
+
+    space_objects = []
+    """Список космических объектов."""
+    @staticmethod
+    def pause_execution():
+        Core.perform_execution = False
+
+    @staticmethod
+    def start_execution():
+        """Обработчик события нажатия на кнопку Start.
+        Запускает циклическое исполнение функции execution.
+        """
+        Core.perform_execution = True
+
+    @staticmethod
+    def stop_execution():
+        """Обработчик события нажатия на кнопку Start.
+        Останавливает циклическое исполнение функции execution.
+        """
+        Core.alive = False
 
 
 def execution(delta):
@@ -33,34 +53,14 @@ def execution(delta):
     Цикличность выполнения зависит от значения глобальной переменной perform_execution.
     При perform_execution == True функция запрашивает вызов самой себя по таймеру через от 1 мс до 100 мс.
     """
-    global model_time
-    global displayed_time
-    recalculate_space_objects_positions([dr.obj for dr in space_objects], delta)
-    model_time += delta
+    recalculate_space_objects_positions([dr.obj for dr in Core.space_objects], delta)
+    Time.model_time += delta
 
 
-def start_execution():
-    """Обработчик события нажатия на кнопку Start.
-    Запускает циклическое исполнение функции execution.
-    """
-    global perform_execution
-    perform_execution = True
 
-
-def pause_execution():
-    global perform_execution
-    perform_execution = False
-
-
-def stop_execution():
-    """Обработчик события нажатия на кнопку Start.
-    Останавливает циклическое исполнение функции execution.
-    """
-    global alive
-    alive = False
 
 def statistic_exception():
-    write_space_objects_data_to_file("Output/statistic.txt", space_objects)
+    write_space_objects_data_to_file("Output/statistic.txt", Core.space_objects)
 
 
 def open_file():
@@ -68,23 +68,20 @@ def open_file():
     функцию считывания параметров системы небесных тел из данного файла.
     Считанные объекты сохраняются в глобальный список space_objects
     """
-    global space_objects
-    global browser
     global model_time
 
     model_time = 0.0
     in_filename = "Input/solar_system.txt"
-    space_objects = read_space_objects_data_from_file(in_filename)
-    max_distance = max([max(abs(obj.obj.x), abs(obj.obj.y)) for obj in space_objects])
+    Core.space_objects = read_space_objects_data_from_file(in_filename)
+    max_distance = max([max(abs(obj.obj.x), abs(obj.obj.y)) for obj in Core.space_objects])
     calculate_scale_factor(max_distance)
 
 
 def handle_events(events, menu):
-    global alive
     for event in events:
         menu.react(event)
         if event.type == pg.QUIT:
-            alive = False
+            Core.alive = False
 
 
 def slider_to_real(val):
@@ -92,17 +89,15 @@ def slider_to_real(val):
 
 
 def slider_reaction(event):
-    global time_scale
-    time_scale = slider_to_real(event.el.get_value())
+    Time.time_scale = slider_to_real(event.el.get_value())
 
 
 def init_ui(screen):
-    global browser
     slider = thorpy.SliderX(100, (-10, 10), "Simulation speed")
     slider.user_func = slider_reaction
-    button_stop = thorpy.make_button("Quit", func=stop_execution)
-    button_pause = thorpy.make_button("Pause", func=pause_execution)
-    button_play = thorpy.make_button("Play", func=start_execution)
+    button_stop = thorpy.make_button("Quit", func=Core.stop_execution)
+    button_pause = thorpy.make_button("Pause", func=Core.pause_execution)
+    button_play = thorpy.make_button("Play", func=Core.start_execution)
     button_statistic = thorpy.make_button("Statistic", func=statistic_exception)
     timer = thorpy.OneLineText("Seconds passed")
 
@@ -138,17 +133,7 @@ def main():
     Создаёт объекты графического дизайна библиотеки tkinter: окно, холст, фрейм с кнопками, кнопки.
     """
 
-    global physical_time
-    global displayed_time
-    global time_step
-    global time_speed
-    global space
-    global start_button
-    global perform_execution
-    global timer
-
     print('Modelling started!')
-    physical_time = 0
 
     pg.init()
 
@@ -158,18 +143,18 @@ def main():
     last_time = time.perf_counter()
     drawer = Drawer(screen)
     menu, box, timer = init_ui(screen)
-    perform_execution = True
+    Core.perform_execution = True
 
-    while alive:
+    while Core.alive:
         handle_events(pg.event.get(), menu)
         cur_time = time.perf_counter()
-        if perform_execution:
-            execution((cur_time - last_time) * time_scale)
-            text = "%d seconds passed" % (int(model_time))
+        if Core.perform_execution:
+            execution((cur_time - last_time) * Time.time_scale)
+            text = "%d seconds passed" % (int(Time.model_time))
             timer.set_text(text)
 
         last_time = cur_time
-        drawer.update(space_objects, box)
+        drawer.update(Core.space_objects, box)
         time.sleep(1.0 / 60)
 
     print('Modelling finished!')
