@@ -4,6 +4,7 @@
 from Data.solar_vis import *
 from Data.solar_model import *
 from Data.solar_input import *
+from Data.solar_statistic import *
 import thorpy
 import time
 import numpy as np
@@ -22,12 +23,14 @@ class Time:
 
 class Core:
     alive = True
+    statistic_maneger = StatisticManager()
 
     perform_execution = False
     """Флаг цикличности выполнения расчёта"""
 
     space_objects = []
     """Список космических объектов."""
+
     @staticmethod
     def pause_execution():
         Core.perform_execution = False
@@ -46,6 +49,10 @@ class Core:
         """
         Core.alive = False
 
+    @staticmethod
+    def statistic_execution():
+        Core.statistic_maneger.get()
+
 
 def execution(delta):
     """Функция исполнения -- выполняется циклически, вызывая обработку всех небесных тел,
@@ -58,19 +65,13 @@ def execution(delta):
 
 
 
-
-def statistic_exception():
-    write_space_objects_data_to_file("Output/statistic.txt", Core.space_objects)
-
-
 def open_file():
     """Открывает диалоговое окно выбора имени файла и вызывает
     функцию считывания параметров системы небесных тел из данного файла.
     Считанные объекты сохраняются в глобальный список space_objects
     """
-    global model_time
 
-    model_time = 0.0
+    Core.statistic_maneger = StatisticManager()
     in_filename = "Input/solar_system.txt"
     Core.space_objects = read_space_objects_data_from_file(in_filename)
     max_distance = max([max(abs(obj.obj.x), abs(obj.obj.y)) for obj in Core.space_objects])
@@ -98,7 +99,7 @@ def init_ui(screen):
     button_stop = thorpy.make_button("Quit", func=Core.stop_execution)
     button_pause = thorpy.make_button("Pause", func=Core.pause_execution)
     button_play = thorpy.make_button("Play", func=Core.start_execution)
-    button_statistic = thorpy.make_button("Statistic", func=statistic_exception)
+    button_statistic = thorpy.make_button("Statistic", func=Core.statistic_execution)
     timer = thorpy.OneLineText("Seconds passed")
 
     button_load = thorpy.make_button(text="Load a file", func=open_file)
@@ -144,7 +145,7 @@ def main():
     drawer = Drawer(screen)
     menu, box, timer = init_ui(screen)
     Core.perform_execution = True
-
+    last_time_statistic = 0
     while Core.alive:
         handle_events(pg.event.get(), menu)
         cur_time = time.perf_counter()
@@ -152,6 +153,9 @@ def main():
             execution((cur_time - last_time) * Time.time_scale)
             text = "%d seconds passed" % (int(Time.model_time))
             timer.set_text(text)
+            if (cur_time - last_time_statistic) * Time.time_scale > 1000 * 100:
+                Core.statistic_maneger.add(Core.space_objects, (cur_time - last_time) * Time.time_scale)
+                last_time_statistic = cur_time
 
         last_time = cur_time
         drawer.update(Core.space_objects, box)
